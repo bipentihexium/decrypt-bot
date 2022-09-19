@@ -1,0 +1,7 @@
+apikey
+/build/
+.vscode/
+libs/*
+/out/*
+!/out/word_list_1k.txt
+
