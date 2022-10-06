@@ -1,7 +1,7 @@
 #include "command_parser.hpp"
 
 constexpr bool isword(char c) {
-	return std::isalnum(c) || c == '$' || c == '_' || c == '-';
+	return std::isalnum(c) || c == '$' || c == '_' || c == '-' || c == ',';
 }
 
 command_parser::command_parser(const std::string &contents) : cmd(contents) {

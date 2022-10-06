@@ -6,6 +6,7 @@
 #include <random>
 #include <string>
 #include <unordered_map>
+#include <vector>
 #include <dpp/dpp.h>
 #include "utfconvs.hpp"
 #include "wys_lib_cpp.hpp"
@@ -14,7 +15,6 @@
 #include "math.hpp"
 
 std::string resolve_const(const std::string &const_name) {
-
 	auto it = constants.find(const_name);
 	return it == constants.end() ? "<undefined>" : it->second;
 }
@@ -30,6 +30,12 @@ std::string decrypt_wrapper(const std::string &data, const std::string &key) {
 }
 std::string encrypt_wrapper(const std::string &data, const std::string &key) {
 	return utf8::from(humanscantsolvethis_encrypt(utf32::from(data), key));
+}
+std::string l5decrypt_wrapper(const std::string &data, const std::vector<int> &key) {
+	return utf8::from(intelligencecheck_decrypt(utf32::from(data), key));
+}
+std::string l5encrypt_wrapper(const std::string &data, const std::vector<int> &key) {
+	return utf8::from(intelligencecheck_encrypt(utf32::from(data), key));
 }
 std::string mask_wrapper(const std::string &data, const std::string &chars) {
 	return utf8::from(mask_data(utf32::from(data), utf32::from(chars)));
@@ -74,7 +80,7 @@ void decrypt_encrypt(command_parser &cmd, const dpp::message_create_t &event, F 
 	if (key.empty()) {
 		reply(event, "key can't be empty");
 		return;
-	} else if (!std::all_of(key.begin(), key.end(), [](char c) { return c >= 'A' && c <= ']'; })) {
+	} else if (!std::all_of(key.begin(), key.end(), [](char c) { return c >= 'A' && c <= '}'; })) {
 		reply(event, "invalid key (`" + key + "`)");
 		return;
 	}
@@ -84,6 +90,55 @@ void decrypt_encrypt(command_parser &cmd, const dpp::message_create_t &event, F 
 		return;
 	}
 	reply(event, "```\n" + func(data, key) + "\n```");
+}
+
+template<typename F>
+void l5decrypt_l5encrypt(command_parser &cmd, const dpp::message_create_t &event, F func) {
+	std::string key = cmd.next_resolved();
+	key.erase(std::remove_if(key.begin(), key.end(), [](char c) { return std::isspace(c); }), key.end());
+	if (key.empty()) {
+		reply(event, "key can't be empty");
+		return;
+	} else if (!std::all_of(key.begin(), key.end(), [](char c) { return (c >= '0' && c <= '9') || c == ',' || c == '-'; })) {
+		reply(event, "invalid key (`" + key + "`)");
+		return;
+	}
+	std::vector<int> k;
+	int buff = 0;
+	for (auto it = key.begin(); it != key.end(); it++) {
+		switch (*it) {
+		case '0':
+		case '1':
+		case '2':
+		case '3':
+		case '4':
+		case '5':
+		case '6':
+		case '7':
+		case '8':
+		case '9': buff *= 10; buff += *it - '0'; break;
+		case ',': k.push_back(buff); buff = 0; break;
+		case '-': 
+			it++;
+			if (it == key.end() || *it < '0' || *it > '9') {
+				reply(event, "invalid key (`" + key + "`)");
+				return;
+			}
+			buff = '0' - *it;
+			break;
+		}
+	}
+	k.push_back(buff);
+	for (int i : k) {
+		std::cout << "_" << i;
+	}
+	std::cout << std::endl;
+	std::string data = cmd.next_resolved();
+	if (data.empty()) {
+		reply(event, "empty data - result is empty too then :)");
+		return;
+	}
+	reply(event, "```\n" + func(data, k) + "\n```");
 }
 template<typename F>
 void datafunc(command_parser &cmd, const dpp::message_create_t &event, F func) {
@@ -139,7 +194,7 @@ int main() {
 							"help (man), rng, frng, math, imath"
 						).add_field(
 							"Decrypt/Encrypt",
-							"dontbother (db), dontbother_encrypt (dbe), decrypt (d), encrypt (e)"
+							"dontbother (db), dontbother_encrypt (dbe), decrypt (d), encrypt (e), l5decrypt (d5), l5encrypt (e5)"
 						).add_field(
 							"Utility",
 							"resolve, mask, score, frequency (freq), find_key (rev)"
@@ -218,6 +273,26 @@ int main() {
 						).add_field(
 							"Aliases",
 							"encrypt, e"
+						);
+				} else if (cmd2 == "l5decrypt" || cmd2 == "d5") {
+					help_embed.set_title("DecryptBot help for `d!l5decrypt`")
+						.set_description("`d!l5decrypt <key:resolved, typed> <data:resolved>`")
+						.add_field(
+							"Decrypts `data` using the _intelligencecheck_ algorithm with key `key`",
+							"key is a comma separated list of numbers, like `0,12,-3,3,5`"
+						).add_field(
+							"Aliases",
+							"l5decrypt, d5"
+						);
+				} else if (cmd2 == "l5encrypt" || cmd2 == "e5") {
+					help_embed.set_title("DecryptBot help for `d!l5encrypt`")
+						.set_description("`d!encrypt <key:resolved, typed> <data:resolved>`")
+						.add_field(
+							"Encrypts `data` using the _intelligencecheck_ algorithm with key `key`",
+							"key is a comma separated list of numbers, like `0,12,-3,3,5`"
+						).add_field(
+							"Aliases",
+							"l5encrypt, e5"
 						);
 				} else if (cmd2 == "resolve") {
 					help_embed.set_title("DecryptBot help for `d!resolve`")
@@ -305,6 +380,10 @@ int main() {
 				decrypt_encrypt(cmd, event, decrypt_wrapper);
 			} else if (cmdname == "encrypt" || cmdname == "e") {
 				decrypt_encrypt(cmd, event, encrypt_wrapper);
+			} else if (cmdname == "l5decrypt" || cmdname == "d5") {
+				l5decrypt_l5encrypt(cmd, event, l5decrypt_wrapper);
+			} else if (cmdname == "l5encrypt" || cmdname == "e5") {
+				l5decrypt_l5encrypt(cmd, event, l5encrypt_wrapper);
 			} else if (cmdname == "resolve") {
 				auto it = constants.find(cmd.next());
 				if (it == constants.end())

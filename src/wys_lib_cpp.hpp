@@ -111,6 +111,32 @@ inline std::string sheismymother_decrypt(const std::string &data, const std::str
 inline std::string sheismymother_encrypt(const std::string &data, const std::string &key=key3) { return humanscantsolvethis_encrypt(data, key); }
 inline std::string processingpowercheck_decrypt(const std::string &data, const std::string &key=key4) { return humanscantsolvethis_decrypt(data, key); }
 inline std::string processingpowercheck_encrypt(const std::string &data, const std::string &key=key4) { return humanscantsolvethis_encrypt(data, key); }
+template<typename ST, typename KT>
+inline ST intelligencecheck_decrypt(const ST &data, const KT &key) {
+	ST datacpy(data);
+	ST out;
+	out.reserve(datacpy.size());
+	for (unsigned int index = 0, keyindex = 0; !datacpy.empty(); keyindex = (keyindex + 1) % key.size()) {
+		index = ((index + key[keyindex]) % datacpy.size() + datacpy.size()) % datacpy.size();
+		out.push_back(datacpy[index]);
+		datacpy.erase(datacpy.begin() + index);
+	}
+	return out;
+}
+template<typename ST, typename KT>
+inline ST intelligencecheck_encrypt(const ST &data, const KT &key) {
+	ST out(data.size(), static_cast<ST::value_type>(0));
+	std::vector<unsigned int> free_indices(data.size(), 0);
+	std::iota(free_indices.begin(), free_indices.end(), 0);
+	unsigned int index = 0, keyindex = 0;
+	for (const auto &c : data) {
+		index = ((index + key[keyindex]) % free_indices.size() + free_indices.size()) % free_indices.size();
+		keyindex = (keyindex + 1) % key.size();
+		out[free_indices[index]] = c;
+		free_indices.erase(free_indices.begin() + index);
+	}
+	return out;
+}
 
 inline std::string humanscantsolvethis_decrypt_partial(const std::string &data, const std::string &key=key2, unsigned int length=100) {
 	std::string datacpy(data);
