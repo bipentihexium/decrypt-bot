@@ -117,7 +117,7 @@ inline ST intelligencecheck_decrypt(const ST &data, const KT &key) {
 	ST out;
 	out.reserve(datacpy.size());
 	for (unsigned int index = 0, keyindex = 0; !datacpy.empty(); keyindex = (keyindex + 1) % key.size()) {
-		index = ((index + key[keyindex]) % datacpy.size() + datacpy.size()) % datacpy.size();
+		index = static_cast<unsigned int>((static_cast<int>(index) + key[keyindex] + datacpy.size()) % datacpy.size() + datacpy.size()) % datacpy.size();
 		out.push_back(datacpy[index]);
 		datacpy.erase(datacpy.begin() + index);
 	}
@@ -130,7 +130,7 @@ inline ST intelligencecheck_encrypt(const ST &data, const KT &key) {
 	std::iota(free_indices.begin(), free_indices.end(), 0);
 	unsigned int index = 0, keyindex = 0;
 	for (const auto &c : data) {
-		index = ((index + key[keyindex]) % free_indices.size() + free_indices.size()) % free_indices.size();
+		index = static_cast<unsigned int>((static_cast<int>(index) + key[keyindex] + free_indices.size()) % free_indices.size() + free_indices.size()) % free_indices.size();
 		keyindex = (keyindex + 1) % key.size();
 		out[free_indices[index]] = c;
 		free_indices.erase(free_indices.begin() + index);
