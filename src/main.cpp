@@ -191,13 +191,13 @@ int main() {
 						.set_description("use with `d!command` or `!command`, aliases are in parentheses")
 						.add_field(
 							"Misc",
-							"help (man), rng, frng, math, imath"
+							"help (man), rng, frng, math (m), imath"
 						).add_field(
 							"Decrypt/Encrypt",
 							"dontbother (db), dontbother_encrypt (dbe), decrypt (d), encrypt (e), l5decrypt (d5), l5encrypt (e5)"
 						).add_field(
 							"Utility",
-							"resolve, mask, score, frequency (freq), find_key (rev)"
+							"resolve (r), mask (ms), score, frequency (freq), find_key (rev)"
 						).add_field(
 							"how to use those commands?",
 							"use !help commands to get more info on how commands work, !help <command> to get more info about specific command"
@@ -294,19 +294,25 @@ int main() {
 							"Aliases",
 							"l5encrypt, e5"
 						);
-				} else if (cmd2 == "resolve") {
+				} else if (cmd2 == "resolve" || cmd2 == "r") {
 					help_embed.set_title("DecryptBot help for `d!resolve`")
 						.set_description("`d!resolve <constant>`")
 						.add_field(
 							"Gets value of `constant`",
 							"use it without the `$` prefix - it isn't resolved argument"
+						).add_field(
+							"Aliases",
+							"resolve, r"
 						);
-				} else if (cmd2 == "mask") {
+				} else if (cmd2 == "mask" || cmd2 == "ms") {
 					help_embed.set_title("DecryptBot help for `d!mask`")
 						.set_description("`d!mask <chars:resolved> <data:resolved>`")
 						.add_field(
 							"Masks out all characters not present in `chars` from data",
 							"masked out characters are replaced with (`.`)"
+						).add_field(
+							"Aliases",
+							"mask, ms"
 						);
 				} else if (cmd2 == "score") {
 					help_embed.set_title("DecryptBot help for `d!score`")
@@ -339,13 +345,16 @@ int main() {
 							"Generates random number between a and b",
 							"both extremes are inclusive, generates real numbers, not just integers"
 						);
-				} else if (cmd2 == "math") {
+				} else if (cmd2 == "math" || cmd2 == "m") {
 					help_embed.set_title("DecryptBot help for `d!math`")
 						.set_description("`d!math <expression:rest of the message :)>`")
 						.add_field(
 							"Evaluates an expression",
 							"uses custom expression parser - uses only `double`s and supports just these operators: `+-*/^%()`\n"
 							"`^` is power and `%` is modulo"
+						).add_field(
+							"Aliases",
+							"math m"
 						);
 				} else if (cmd2 == "find_key" || cmd2 == "rev") {
 					help_embed.set_title("DecryptBot help for `d!find_key`")
@@ -384,13 +393,13 @@ int main() {
 				l5decrypt_l5encrypt(cmd, event, l5decrypt_wrapper);
 			} else if (cmdname == "l5encrypt" || cmdname == "e5") {
 				l5decrypt_l5encrypt(cmd, event, l5encrypt_wrapper);
-			} else if (cmdname == "resolve") {
+			} else if (cmdname == "resolve" || cmdname == "r") {
 				auto it = constants.find(cmd.next());
 				if (it == constants.end())
 					reply(event, "<undefined constant>");
 				else
 					reply(event, std::string("```") + it->second + "```");
-			} else if (cmdname == "mask") {
+			} else if (cmdname == "mask" || cmdname == "ms") {
 				strdatafunc(cmd, event, mask_wrapper);
 			} else if (cmdname == "score") {
 				datafunc(cmd, event, [](const std::string &data) { return std::to_string(message_likeliness(data, trie)); });
@@ -400,7 +409,7 @@ int main() {
 				rng<long long int, std::uniform_int_distribution<long long int>>(cmd, event, " (integer)");
 			} else if (cmdname == "frng") {
 				rng<double, std::uniform_real_distribution<double>>(cmd, event, " (real number)");
-			} else if (cmdname == "math") {
+			} else if (cmdname == "math" || cmdname == "m") {
 				reply(event, calc(cmd.rest()));
 			} else if (cmdname == "imath") {
 				reply(event, "this command is unfinished :(");
