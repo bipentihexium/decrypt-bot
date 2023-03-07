@@ -389,7 +389,7 @@ int main() {
 				if (it == constants.end())
 					reply(event, "<undefined constant>");
 				else
-					reply(event, resolve_const(it->second));
+					reply(event, it->second);
 			} else if (cmdname == "mask") {
 				strdatafunc(cmd, event, mask_wrapper);
 			} else if (cmdname == "score") {
