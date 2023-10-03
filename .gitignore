@@ -1,5 +1,6 @@
 apikey
 /build/
+/vscbuild/
 .vscode/
 libs/*
 /out/*

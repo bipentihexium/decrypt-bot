@@ -177,6 +177,7 @@ int main() {
 	}
 	trie.load_file("./word_list_1k.txt", 0);
 	dpp::cluster bot(token, dpp::i_default_intents | dpp::i_message_content);
+	bot.set_presence(dpp::presence(dpp::presence_status::ps_online, dpp::activity(dpp::activity_type::at_watching, "you eerily", "watching when you are solving...\nwatching when you are not", "")));
 	bot.on_log(dpp::utility::cout_logger());
 	bot.on_message_create([](const dpp::message_create_t &event) {
 		if (!event.msg.author.is_bot() && event.msg.content.starts_with("!") || event.msg.content.starts_with("d!")) {
@@ -198,6 +199,9 @@ int main() {
 						).add_field(
 							"Utility",
 							"resolve (r), mask (ms), score, frequency (freq), find_key (rev)"
+						).add_field(
+							"Bonus",
+							"timestamp (time, when)"
 						).add_field(
 							"how to use those commands?",
 							"use !help commands to get more info on how commands work, !help <command> to get more info about specific command"
@@ -366,6 +370,16 @@ int main() {
 							"Aliases",
 							"find_key, rev"
 						);
+				} else if (cmd2 == "timestamp" || cmd2 == "time" || cmd2 == "when") {
+					help_embed.set_title("DecryptBot help for `d!timestamp`")
+						.set_description("`d!timestamp <level_number:typed i16>`")
+						.add_field(
+							"shows when level `level_number` was solved",
+							"..."
+						).add_field(
+							"Aliases",
+							"timestamp, time, when"
+						);
 				} else {
 					help_embed.set_title("that command doesn't have help for itself or doesn't exist");
 				}
@@ -442,6 +456,26 @@ int main() {
 				}
 				ss << "\n```";
 				reply(event, ss.str());
+			} else if (cmdname == "timestamp" || cmdname == "time" || cmdname == "when") {
+				int16_t level_id;
+				if (!cmd.try_next(level_id)) {
+					level_id = 4;
+				}
+				if (level_id < 0 || level_id > 7) {
+					reply(event, "level_id must be between 0 and 4 (both inclusive)");
+				} else {
+					constexpr const char *replies[] = {
+						"binary was \"borrowed\" from the game binary (correctly decoded) at <t:1647262961> - <t:1647262961:R> (wow, on pi day!)",
+						"L1 (dontbother) was solved at <t:1648579584> - <t:1648579584:R>",
+						"L2 (humanscantsolvethis) was solved at <t:1648824834> - <t:1648824834:R>",
+						"L3 (sheismymother) was solved at <t:1654835199> - <t:1654835199:R>",
+						"L4 (processingpowercheck) was solved at <t:1655850348> - <t:1655850348:R>",
+						"L5 (intelligencecheck) was not solved yet :(",
+						"L6 was not solved yet :(",
+						"L7 was not solved yet :(",
+					};
+					reply(event, replies[level_id]);
+				}
 			}
 		}
 	});
